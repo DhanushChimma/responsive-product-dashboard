@@ -6,7 +6,7 @@ import {
   Menu, MoreHorizontal, Search, Settings, ShoppingBag, Users, X, Zap
 } from "lucide-react";
 import {
-  Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis
+  Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from "recharts";
 import "./styles.css";
 
@@ -83,12 +83,12 @@ function App() {
           <a className={`nav-item ${activePage === "overview" ? "active" : ""}`} href="#overview" onClick={(e) => { e.preventDefault(); setActivePage("overview"); setMenuOpen(false); }}><LayoutDashboard size={18}/> Overview</a>
           <a className="nav-item" href="#orders" onClick={() => { setActivePage("overview"); setMenuOpen(false); }}><ShoppingBag size={18}/> Orders <span className="nav-count">12</span></a>
           <a className={`nav-item ${activePage === "customers" ? "active" : ""}`} href="#customers" onClick={(e) => { e.preventDefault(); setActivePage("customers"); setMenuOpen(false); }}><Users size={18}/> Customers</a>
-          <a className="nav-item" href="#analytics" onClick={() => { setActivePage("overview"); setMenuOpen(false); }}><Activity size={18}/> Analytics</a>
+          <a className={`nav-item ${activePage === "analytics" ? "active" : ""}`} href="#analytics" onClick={(e) => { e.preventDefault(); setActivePage("analytics"); setMenuOpen(false); }}><Activity size={18}/> Analytics</a>
         </nav>
         <div className="nav-label tools-label">PREFERENCES</div>
         <nav>
-          <a className="nav-item" href="#settings" onClick={() => setNotice("Settings are not connected in this demo.")}><Settings size={18}/> Settings</a>
-          <a className="nav-item" href="#help" onClick={() => setNotice("Help center demo link.")}><CircleHelp size={18}/> Help center</a>
+          <a className={`nav-item ${activePage === "settings" ? "active" : ""}`} href="#settings" onClick={(e) => { e.preventDefault(); setActivePage("settings"); setMenuOpen(false); }}><Settings size={18}/> Settings</a>
+          <a className={`nav-item ${activePage === "help" ? "active" : ""}`} href="#help" onClick={(e) => { e.preventDefault(); setActivePage("help"); setMenuOpen(false); }}><CircleHelp size={18}/> Help center</a>
         </nav>
         <div className="sidebar-bottom"><div className="upgrade-card"><div className="upgrade-icon"><Zap size={16}/></div><strong>Unlock your growth</strong><p>Get more insights with Pulse Pro.</p><button onClick={() => setNotice("Thanks for your interest! This is a UI demo.")}>Explore plans <ArrowUpRight size={14}/></button></div><div className="profile"><div className="profile-avatar">DC</div><div><strong>Dhanush Chimma</strong><small>Admin account</small></div><MoreHorizontal size={18}/></div></div>
       </aside>
@@ -97,7 +97,7 @@ function App() {
       <main className="main-content" id="overview">
         <header className="topbar">
           <button className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation"><Menu size={20}/></button>
-          <div className="breadcrumb">Workspace <span>/</span> <strong>{activePage === "customers" ? "Customers" : "Overview"}</strong></div>
+          <div className="breadcrumb">Workspace <span>/</span> <strong>{({customers:"Customers", analytics:"Analytics", settings:"Settings", help:"Help Center"})[activePage] || "Overview"}</strong></div>
           <div className="top-actions"><div className="search-global"><Search size={16}/><span>Search anything...</span><kbd>⌘ K</kbd></div><button className="icon-button notification" aria-label="Notifications" onClick={() => setNotice("You're all caught up!") }><Bell size={18}/><i/></button><div className="top-avatar">DC</div></div>
         </header>
 
@@ -137,6 +137,9 @@ function App() {
         </section>
         </>}
         {activePage === "customers" && <CustomersPage search={customerSearch} setSearch={setCustomerSearch} />}
+        {activePage === "analytics" && <AnalyticsPage period={period} setPeriod={setPeriod} />}
+        {activePage === "settings" && <SettingsPage setNotice={setNotice} />}
+        {activePage === "help" && <HelpPage />}
         <footer className="footer"><span>© 2026 Pulse Dashboard</span><span>Sample data · Portfolio demonstration</span></footer>
       </main>
       {notice && <div className="toast" role="status"><span className="toast-check">✓</span>{notice}<button onClick={() => setNotice("")} aria-label="Dismiss notification"><X size={15}/></button></div>}
@@ -189,6 +192,102 @@ function CustomersPage({ search, setSearch }) {
           </table>
           {filteredCustomers.length === 0 && <div className="empty-state">No customers match your search.</div>}
         </div>
+      </section>
+    </section>
+  );
+}
+
+
+function AnalyticsPage({ period, setPeriod }) {
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [metric, setMetric] = useState("Revenue");
+  const channelData = [
+    { channel: "Online store", revenue: 28450, orders: 745 },
+    { channel: "Social media", revenue: 12680, orders: 334 },
+    { channel: "Direct", revenue: 7164, orders: 205 }
+  ];
+  const productData = [
+    { product: "Headphones", sales: 12400 },
+    { product: "Smart watch", sales: 10850 },
+    { product: "Studio speaker", sales: 8640 },
+    { product: "Accessories", sales: 5920 },
+    { product: "Other", sales: 4484 }
+  ];
+  const total = metric === "Revenue" ? "$48,294" : "1,284";
+  return (
+    <section className="customers-page analytics-page">
+      <section className="page-heading">
+        <div><div className="eyebrow"><span className="live-dot"/> PERFORMANCE INSIGHTS</div><h1>Analytics</h1><p>Explore revenue trends, sales channels, and product performance.</p></div>
+        <div className="heading-actions"><div className="range-wrap"><button className="secondary-button" onClick={() => setRangeOpen(!rangeOpen)}><CalendarDays size={16}/>{period}<ChevronDown size={15}/></button>{rangeOpen && <div className="range-menu">{["Today","Last 7 days","Last 30 days","This year"].map(p => <button key={p} onClick={() => {setPeriod(p);setRangeOpen(false);}}>{p}{period === p && " ✓"}</button>)}</div>}</div></div>
+      </section>
+      <section className="metric-grid" aria-label="Analytics metrics">
+        <Metric title="Gross revenue" value="$48,294" change="+12.8%" note="vs. previous period" icon={<span className="metric-symbol">$</span>} positive />
+        <Metric title="Orders processed" value="1,284" change="+8.2%" note="vs. previous period" icon={<ShoppingBag size={19}/>} positive />
+        <Metric title="Conversion rate" value="3.62%" change="+0.6%" note="vs. previous period" icon={<Activity size={19}/>} positive />
+        <Metric title="Refund rate" value="1.8%" change="-0.3%" note="vs. previous period" icon={<ArrowDownRight size={19}/>} positive />
+      </section>
+      <section className="content-grid analytics-charts">
+        <div className="panel revenue-panel">
+          <div className="panel-heading"><div><h2>Performance trend</h2><p>Daily revenue and order activity · sample data</p></div><select className="analytics-select" value={metric} onChange={e => setMetric(e.target.value)} aria-label="Select performance metric"><option>Revenue</option><option>Orders</option></select></div>
+          <div className="chart-legend"><span><i className="legend-dot revenue-dot"/> {metric}</span></div>
+          <div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={salesData} margin={{ top: 12, right: 8, left: -18, bottom: 0 }}><defs><linearGradient id="analyticsFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7467f0" stopOpacity={0.22}/><stop offset="95%" stopColor="#7467f0" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="#edf0f5" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#98a2b3", fontSize: 12 }}/><YAxis axisLine={false} tickLine={false} tick={{ fill: "#98a2b3", fontSize: 11 }} tickFormatter={v => metric === "Revenue" ? `$${v/1000}k` : v}/><Tooltip formatter={(v) => [metric === "Revenue" ? money(v) : v, metric]}/><Area type="monotone" dataKey={metric === "Revenue" ? "revenue" : "orders"} stroke="#7467f0" strokeWidth={2.6} fill="url(#analyticsFill)" activeDot={{r:5,strokeWidth:0}}/></AreaChart></ResponsiveContainer></div>
+          <div className="chart-footer"><span><strong>{total}</strong> {metric.toLowerCase()} in selected period</span><span className="footer-growth"><ArrowUpRight size={14}/> Trending upward</span></div>
+        </div>
+        <div className="panel channel-panel">
+          <div className="panel-heading"><div><h2>Revenue by channel</h2><p>Channel contribution</p></div></div>
+          <div className="channel-total"><strong>$48,294</strong><span>total revenue</span></div>
+          <div className="channel-list">{channelData.map((item, i) => <Channel key={item.channel} name={item.channel} percent={[59,26,15][i]} value={money(item.revenue)} color={["purple","blue","orange"][i]}/>)}</div>
+          <div className="channel-note"><span className="note-icon"><Zap size={15}/></span><p><strong>Top channel:</strong> Online store contributes the largest share of revenue.</p></div>
+        </div>
+      </section>
+      <section className="panel orders-panel analytics-products">
+        <div className="panel-heading"><div><h2>Top products</h2><p>Revenue contribution by product · sample data</p></div><span className="text-button">5 products</span></div>
+        <div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><BarChart data={productData} margin={{top: 8, right: 16, left: 0, bottom: 4}}><CartesianGrid stroke="#edf0f5" vertical={false}/><XAxis dataKey="product" axisLine={false} tickLine={false} tick={{fill:"#98a2b3",fontSize:11}}/><YAxis axisLine={false} tickLine={false} tick={{fill:"#98a2b3",fontSize:11}} tickFormatter={v => `$${v/1000}k`}/><Tooltip formatter={v => [money(v),"Revenue"]}/><Bar dataKey="sales" fill="#7467f0" radius={[6,6,0,0]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
+      </section>
+    </section>
+  );
+}
+
+
+function SettingsPage({ setNotice }) {
+  const [workspace, setWorkspace] = useState("Studio Commerce");
+  const [email, setEmail] = useState("admin@studiocommerce.example");
+  const [weekly, setWeekly] = useState(true);
+  const [orderAlerts, setOrderAlerts] = useState(true);
+  const [compact, setCompact] = useState(false);
+  return (
+    <section className="customers-page">
+      <section className="page-heading"><div><div className="eyebrow"><span className="live-dot"/> PREFERENCES</div><h1>Settings</h1><p>Manage your workspace and dashboard preferences.</p></div></section>
+      <section className="panel orders-panel" style={{padding:24, marginBottom:20}}>
+        <div className="panel-heading"><div><h2>Workspace details</h2><p>Basic information for this demo workspace.</p></div></div>
+        <div className="settings-form"><label className="settings-field">Workspace name<input value={workspace} onChange={e=>setWorkspace(e.target.value)} /></label><label className="settings-field">Contact email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></label><button className="primary-button" onClick={()=>setNotice("Workspace preferences saved in this demo session.")}>Save changes</button></div>
+      </section>
+      <section className="panel orders-panel" style={{padding:24}}>
+        <div className="panel-heading"><div><h2>Notifications & display</h2><p>Choose how the dashboard behaves.</p></div></div>
+        <div className="settings-options">
+          <label><span><strong>Weekly summary</strong><small>Receive a weekly performance summary.</small></span><input type="checkbox" checked={weekly} onChange={e=>setWeekly(e.target.checked)}/></label>
+          <label><span><strong>Order alerts</strong><small>Show notifications for new and updated orders.</small></span><input type="checkbox" checked={orderAlerts} onChange={e=>setOrderAlerts(e.target.checked)}/></label>
+          <label><span><strong>Compact layout</strong><small>Use a denser dashboard layout preference.</small></span><input type="checkbox" checked={compact} onChange={e=>setCompact(e.target.checked)}/></label>
+        </div>
+      </section>
+    </section>
+  );
+}
+
+function HelpPage() {
+  const [open, setOpen] = useState(0);
+  const faqs = [
+    ["How do I review recent orders?", "Choose Orders in the sidebar or review the Recent orders table on the Overview page. You can search by order, customer, email, or product and filter by status."],
+    ["Can I search for a customer?", "Open Customers and use the customer directory search field to find a customer by name, email, or status."],
+    ["How do I export order data?", "On the Overview page, select Export report. The demo downloads the currently filtered order list as a CSV file."],
+    ["Are the dashboard figures live?", "No. This portfolio project uses sample data to demonstrate frontend layout, navigation, charts, filtering, and interactions."],
+  ];
+  return (
+    <section className="customers-page">
+      <section className="page-heading"><div><div className="eyebrow"><span className="live-dot"/> SUPPORT</div><h1>Help Center</h1><p>Quick answers to common dashboard questions.</p></div></section>
+      <section className="panel orders-panel" style={{padding:24}}>
+        <div className="panel-heading"><div><h2>Frequently asked questions</h2><p>Select a question to view the answer.</p></div></div>
+        <div className="help-list">{faqs.map(([q,a],i)=><div className="help-item" key={q}><button className="help-question" onClick={()=>setOpen(open===i?-1:i)} aria-expanded={open===i}><strong>{q}</strong><span>{open===i?"−":"+"}</span></button>{open===i&&<p className="help-answer">{a}</p>}</div>)}</div>
       </section>
     </section>
   );
